@@ -1,0 +1,27 @@
+# Local development node modules
+node_modules/
+
+# Local sensitive environment variables configurations
+.env
+.env.local
+.env.*.local
+
+# Log files and application trace outputs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# System configurations & temp files
+.DS_Store
+Thumbs.db
+
+# IDE workspace parameters
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
