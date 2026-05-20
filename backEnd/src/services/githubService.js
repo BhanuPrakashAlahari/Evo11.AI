@@ -34,33 +34,37 @@ class GithubService {
         updatedAt: repo.updated_at
       }))
 
-      // 2. Fetch user activity events to extract commit details
-      const eventsUrl = `https://api.github.com/users/${encodeURIComponent(user)}/events/public?per_page=10`
-      const eventsRes = await fetch(eventsUrl, { headers })
-
+      // 2. Fetch commits directly from the top active repositories to guarantee live updates
+      const topRepos = repos.slice(0, 3)
       let commits = []
-      if (eventsRes.ok) {
-        const events = await eventsRes.json()
-        
-        // Filter out recent PushEvent types which contain core commit messages
-        const pushEvents = events.filter(e => e.type === 'PushEvent')
-        
-        pushEvents.forEach(event => {
-          if (event.payload?.commits) {
-            event.payload.commits.forEach(commit => {
-              // Only pull latest unique commits
-              if (commits.length < 3) {
-                commits.push({
-                  repo: event.repo.name.split('/')[1] || event.repo.name,
-                  message: commit.message,
-                  author: commit.author?.name || event.actor.login,
-                  time: event.created_at
-                })
-              }
-            })
+
+      const commitPromises = topRepos.map(async (repo) => {
+        try {
+          const commitsUrl = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo.name)}/commits?per_page=5`
+          const commitsRes = await fetch(commitsUrl, { headers })
+          if (commitsRes.ok) {
+            const rawCommits = await commitsRes.json()
+            if (Array.isArray(rawCommits)) {
+              return rawCommits.map(c => ({
+                repo: repo.name,
+                message: c.commit?.message || 'No commit message',
+                author: c.commit?.author?.name || user,
+                time: c.commit?.author?.date || new Date().toISOString()
+              }))
+            }
           }
-        })
-      }
+        } catch (e) {
+          console.warn(`[GitHub Service] Failed to fetch commits for repo "${repo.name}":`, e.message)
+        }
+        return []
+      })
+
+      const commitsNested = await Promise.all(commitPromises)
+      // Flatten, sort descending by time, and slice to top 5
+      commits = commitsNested
+        .flat()
+        .sort((a, b) => new Date(b.time) - new Date(a.time))
+        .slice(0, 5)
 
       // If no recent commit details were found in public logs, add a standard initial commit
       if (commits.length === 0) {
