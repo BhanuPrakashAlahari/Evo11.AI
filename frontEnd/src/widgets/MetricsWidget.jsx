@@ -1,6 +1,25 @@
 import { useState, useEffect } from 'react'
-import { Cpu, HardDrive, RefreshCw } from 'lucide-react'
+import { Cpu, HardDrive, RefreshCw, Server, Activity } from 'lucide-react'
 import { services } from '../services/api'
+
+/**
+ * Format system uptime (seconds) into a highly readable string.
+ */
+function formatUptime(seconds) {
+  if (isNaN(seconds) || seconds === null) return 'N/A'
+  const d = Math.floor(seconds / (3600 * 24))
+  const h = Math.floor((seconds % (3600 * 24)) / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+
+  const parts = []
+  if (d > 0) parts.push(`${d}d`)
+  if (h > 0) parts.push(`${h}h`)
+  if (m > 0) parts.push(`${m}m`)
+  parts.push(`${s}s`)
+
+  return parts.join(' ')
+}
 
 export default function MetricsWidget({ isLoading: isParentLoading }) {
   const [healthData, setHealthData] = useState(null)
@@ -8,7 +27,7 @@ export default function MetricsWidget({ isLoading: isParentLoading }) {
   const [isFetching, setIsFetching] = useState(false)
   const [hasError, setHasError] = useState(false)
 
-  // Handle immediate mount fetch and establish telemetry interval
+  // Fetch telemetry from /api/health
   useEffect(() => {
     let isActive = true
 
@@ -42,13 +61,12 @@ export default function MetricsWidget({ isLoading: isParentLoading }) {
       }
     }
 
-    // Trigger initial load asynchronously to prevent effect set-state cascades
     fetchInitialMetrics()
     
-    // Periodically fetch server health diagnostics every 5 seconds
+    // Refresh telemetry every 3 seconds for super live, real-time feel
     const interval = setInterval(() => {
       fetchIntervalMetrics()
-    }, 5000)
+    }, 3000)
 
     return () => {
       isActive = false
@@ -56,7 +74,6 @@ export default function MetricsWidget({ isLoading: isParentLoading }) {
     }
   }, [])
 
-  // Enforce skeleton load if either the parent simulated load or immediate local mount load is active
   const showSkeleton = isParentLoading || isLocalLoading
 
   if (showSkeleton) {
@@ -82,62 +99,85 @@ export default function MetricsWidget({ isLoading: isParentLoading }) {
     )
   }
 
-  // Derive display parameters from diagnostic health data
   const isOnline = !hasError && healthData?.success
-  const uptime = isOnline ? healthData.uptime : 'N/A'
+  const performance = healthData?.performance
+
+  // Parse Uptime
+  const uptimeRaw = healthData?.uptime ? parseFloat(healthData.uptime) : null
+  const uptimeString = isOnline ? formatUptime(uptimeRaw) : 'N/A'
+
+  // Parse CPU metrics
+  const cpuPercent = isOnline && performance?.cpu?.usagePercent !== undefined
+    ? Math.round(performance.cpu.usagePercent)
+    : 0
+  const cpuModel = isOnline ? performance?.cpu?.model || 'Unknown' : 'N/A'
+  const cpuCores = isOnline ? performance?.cpu?.cores || 0 : 0
+
+  // Parse Memory metrics
+  const memoryPercent = isOnline && performance?.memory?.usagePercent !== undefined
+    ? Math.round(parseFloat(performance.memory.usagePercent))
+    : 0
   
-  // Extract CPU Loadavg and convert to approximate relative percent (e.g. multiplier of cores)
-  const rawCpuLoad = isOnline && healthData.performance?.cpuLoad ? healthData.performance.cpuLoad[0] : 0
-  const cpuPercent = isOnline ? Math.min(Math.round(rawCpuLoad * 12.5), 100) : 0
-  
-  // Extract Memory utilization percentage
-  const memoryPercent = isOnline && healthData.performance?.memory ? Math.round(parseFloat(healthData.performance.memory.usagePercent)) : 0
-  
-  // Convert OS total/free bytes into readable Gigabyte sizes for storage/memory labels
-  const totalMemGb = isOnline && healthData.performance?.memory 
-    ? (healthData.performance.memory.total / (1024 * 1024 * 1024)).toFixed(0) 
-    : 'N/A'
+  const totalMemGb = isOnline && performance?.memory?.total
+    ? (performance.memory.total / (1024 * 1024 * 1024)).toFixed(1)
+    : '0.0'
+  const usedMemGb = isOnline && performance?.memory?.used
+    ? (performance.memory.used / (1024 * 1024 * 1024)).toFixed(1)
+    : '0.0'
+
+  // Parse Platform metrics
+  const osArch = isOnline ? performance?.platform?.arch || '' : ''
+  const osType = isOnline ? performance?.platform?.type || 'OS' : 'OS'
+
+  // Format Platform display badge
+  const platformLabel = isOnline 
+    ? `${osType === 'Darwin' ? 'macOS' : osType} (${osArch})`
+    : 'Unknown OS'
 
   return (
-    <div className="saas-card-interactive flex flex-col justify-between h-[230px] group/metrics">
-      {/* Glow highlight based on server connectivity status */}
-      <div className={`absolute -top-10 -right-10 h-24 w-24 rounded-full blur-xl transition-all ${
+    <div className="saas-card-interactive flex flex-col justify-between h-[230px] group/metrics overflow-hidden relative">
+      {/* Background Decorative Blur */}
+      <div className={`absolute -top-12 -right-12 h-24 w-24 rounded-full blur-2xl transition-all duration-700 ${
         isOnline 
-          ? 'bg-linear-purple/5 group-hover/metrics:bg-linear-purple/10' 
-          : 'bg-red-500/5 group-hover/metrics:bg-red-500/10'
+          ? 'bg-linear-purple/10 group-hover/metrics:bg-linear-purple/20' 
+          : 'bg-rose-500/10 group-hover/metrics:bg-rose-500/20'
       }`} />
 
+      {/* Header */}
       <div>
-        <div className="flex justify-between items-center pb-3 border-b border-saas-border/40">
-          <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-            <Cpu className="h-3.5 w-3.5 text-zinc-400" />
-            Core Host Metrics
+        <div className="flex justify-between items-center pb-2.5 border-b border-saas-border/40">
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+            <Activity className={`h-3.5 w-3.5 ${isOnline ? 'text-linear-purple' : 'text-zinc-500'}`} />
+            System Metrics
           </span>
           <div className="flex items-center gap-2">
             {isFetching && (
-              <RefreshCw className="h-3 w-3 text-zinc-500 animate-spin" />
+              <RefreshCw className="h-3 w-3 text-linear-purple animate-spin" />
             )}
-            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wider transition-colors ${
+            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider transition-all duration-300 ${
               isOnline 
-                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
-                : 'bg-red-500/10 border-red-500/20 text-red-400'
+                ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' 
+                : 'bg-rose-500/10 border-rose-500/25 text-rose-400 animate-pulse'
             }`}>
-              {isOnline ? 'Online' : 'Offline'}
+              {isOnline ? 'Live' : 'Offline'}
             </span>
           </div>
         </div>
 
-        {/* Real-time system metrics progress bars */}
-        <div className="mt-4 space-y-4">
-          {/* CPU Load Metric */}
+        {/* Real-time progress bars */}
+        <div className="mt-3.5 space-y-3.5">
+          {/* CPU Capacity Progress bar */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-zinc-400">Processor Capacity</span>
+              <span className="font-semibold text-zinc-400 flex items-center gap-1">
+                <Cpu className="h-3 w-3 text-zinc-500" />
+                CPU Capacity
+              </span>
               <span className="font-bold text-white font-mono">{cpuPercent}%</span>
             </div>
-            <div className="h-1.5 w-full rounded-full bg-zinc-950 border border-saas-border overflow-hidden p-[1px]">
+            <div className="h-2 w-full rounded-full bg-zinc-950/80 border border-saas-border overflow-hidden p-[1px]">
               <div 
-                className={`h-full rounded-full transition-all duration-1000 ${
+                className={`h-full rounded-full transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${
                   isOnline 
                     ? 'bg-gradient-to-r from-linear-purple to-indigo-400' 
                     : 'bg-zinc-800'
@@ -145,17 +185,25 @@ export default function MetricsWidget({ isLoading: isParentLoading }) {
                 style={{ width: `${cpuPercent}%` }}
               />
             </div>
+            {isOnline && (
+              <div className="text-[9px] text-zinc-500 truncate" title={`${cpuModel} (${cpuCores} Cores)`}>
+                {cpuModel.replace(/\(R\)|\(TM\)/g, '')} • {cpuCores} Cores
+              </div>
+            )}
           </div>
 
-          {/* Memory Utilization Metric */}
+          {/* Memory Utilization Progress bar */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-zinc-400">Memory Utilization</span>
+              <span className="font-semibold text-zinc-400 flex items-center gap-1">
+                <HardDrive className="h-3 w-3 text-zinc-500" />
+                RAM Allocation
+              </span>
               <span className="font-bold text-white font-mono">{memoryPercent}%</span>
             </div>
-            <div className="h-1.5 w-full rounded-full bg-zinc-950 border border-saas-border overflow-hidden p-[1px]">
+            <div className="h-2 w-full rounded-full bg-zinc-950/80 border border-saas-border overflow-hidden p-[1px]">
               <div 
-                className={`h-full rounded-full transition-all duration-1000 ${
+                className={`h-full rounded-full transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${
                   isOnline 
                     ? 'bg-gradient-to-r from-linear-purple to-indigo-400' 
                     : 'bg-zinc-800'
@@ -163,16 +211,25 @@ export default function MetricsWidget({ isLoading: isParentLoading }) {
                 style={{ width: `${memoryPercent}%` }}
               />
             </div>
+            {isOnline && (
+              <div className="text-[9px] text-zinc-500 flex justify-between">
+                <span>{usedMemGb} GB / {totalMemGb} GB Used</span>
+                <span className="text-[9px] text-zinc-600 font-mono">{platformLabel}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Footer Status */}
       <div className="pt-2 border-t border-saas-border/20 flex items-center justify-between text-[10px] text-zinc-500">
         <span className="flex items-center gap-1">
-          <HardDrive className="h-3 w-3" />
-          <span>RAM: {totalMemGb} GB allocated</span>
+          <Server className="h-3 w-3 text-zinc-600" />
+          <span className="truncate max-w-[120px]">{isOnline ? healthData.performance?.platform?.hostname || 'localhost' : 'Offline'}</span>
         </span>
-        <span>Uptime: {uptime}</span>
+        <span className="font-semibold text-zinc-400">
+          Uptime: <span className="font-mono text-zinc-300">{uptimeString}</span>
+        </span>
       </div>
     </div>
   )

@@ -8,11 +8,24 @@ import apiRoutes from './routes/index.js'
 
 const app = express()
 
-// 1. GLOBAL SECURITY & RESOURCE SHARING MIDDLEWARES
-app.use(helmet()) // Apply standard security HTTP response headers
+// Disable ETag caching to prevent HTTP 304 status codes in development/testing
+app.disable('etag')
+
+// In development, allow any localhost port (handles Vite port shifts like 5173→5174 etc.)
+const corsOrigin = (origin, callback) => {
+  const isLocalhost = !origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')
+  if (isLocalhost || config.isProduction === false) {
+    callback(null, true)
+  } else if (origin === config.clientUrl) {
+    callback(null, true)
+  } else {
+    callback(new Error(`CORS: Origin ${origin} not allowed`))
+  }
+}
+
 app.use(cors({
-  origin: config.clientUrl,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  origin: corsOrigin,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }))

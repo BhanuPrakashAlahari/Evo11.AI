@@ -51,7 +51,37 @@ export const services = {
    * Performs an asynchronous GET request to check system diagnostic health.
    * Target endpoint: GET /api/health
    */
-  getHealth: () => apiClient.get('/health')
+  getHealth: () => apiClient.get('/health'),
+
+  /**
+   * Queries the weather API endpoint for current conditions in a city.
+   * Target endpoint: GET /api/weather?city={city}
+   */
+  getWeather: (city) => apiClient.get('/weather', { params: { city } }),
+
+  /**
+   * Queries the GitHub telemetry API endpoint for repository summaries and commits.
+   * Target endpoint: GET /api/github
+   */
+  getGithub: () => apiClient.get('/github'),
+
+  /**
+   * Queries the Crypto price tracking telemetry API endpoint.
+   * Target endpoint: GET /api/crypto
+   */
+  getCrypto: () => apiClient.get('/crypto'),
+
+  /**
+   * Queries the Tech News API endpoint for latest AI/software articles.
+   * Target endpoint: GET /api/news
+   */
+  getNews: () => apiClient.get('/news'),
+
+  // --- Task Management ---
+  getTasks: () => apiClient.get('/tasks'),
+  createTask: (data) => apiClient.post('/tasks', data),
+  updateTask: (id, data) => apiClient.patch(`/tasks/${id}`, data),
+  deleteTask: (id) => apiClient.delete(`/tasks/${id}`)
 }
 
 export default services

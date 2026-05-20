@@ -13,7 +13,6 @@ import {
   GitHubWidget,
   CryptoWidget,
   NewsWidget,
-  TasksWidget,
   MetricsWidget
 } from '../widgets/placeholder'
 
@@ -72,8 +71,6 @@ export default function Dashboard() {
         <WeatherWidget isLoading={isLoading} />
         
         <CryptoWidget isLoading={isLoading} />
-        
-        <TasksWidget isLoading={isLoading} />
         
         <MetricsWidget isLoading={isLoading} />
         
