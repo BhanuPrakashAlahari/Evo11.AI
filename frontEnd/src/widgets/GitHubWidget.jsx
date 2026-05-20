@@ -146,51 +146,53 @@ export default function GitHubWidget({ isLoading: isParentLoading }) {
           
           {/* LEFT: Clickable Repositories List */}
           <div className="space-y-2">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5 flex justify-between">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1 flex justify-between">
               <span>Active Projects</span>
               <span className="text-[9px] lowercase font-normal italic">click to visit</span>
             </h4>
             
-            {repos.slice(0, 3).map((repo) => (
-              <a
-                key={repo.name}
-                href={repo.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between p-2 rounded-lg bg-zinc-950/60 border border-saas-border/40 hover:border-emerald-500/30 hover:bg-saas-surface-raised transition-all duration-300 group/repo-item cursor-pointer"
-              >
-                <div className="min-w-0 pr-2">
-                  <div className="text-[11px] font-bold text-zinc-200 group-hover/repo-item:text-white truncate flex items-center gap-1">
-                    <span>{repo.name}</span>
-                    <ExternalLink className="h-2.5 w-2.5 text-zinc-600 opacity-0 group-hover/repo-item:opacity-100 transition-opacity" />
+            <div className="space-y-2 max-h-[110px] overflow-y-auto pr-1 no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {repos.map((repo) => (
+                <a
+                  key={repo.name}
+                  href={repo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-2 rounded-lg bg-zinc-950/60 border border-saas-border/40 hover:border-emerald-500/30 hover:bg-saas-surface-raised transition-all duration-300 group/repo-item cursor-pointer"
+                >
+                  <div className="min-w-0 pr-2">
+                    <div className="text-[11px] font-bold text-zinc-200 group-hover/repo-item:text-white truncate flex items-center gap-1">
+                      <span>{repo.name}</span>
+                      <ExternalLink className="h-2.5 w-2.5 text-zinc-600 opacity-0 group-hover/repo-item:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="text-[9px] text-zinc-500 flex items-center gap-2 mt-0.5">
+                      <span className="font-semibold text-zinc-400">{repo.language}</span>
+                      <span>•</span>
+                      <span>{getRelativeTime(repo.updatedAt)}</span>
+                    </div>
                   </div>
-                  <div className="text-[9px] text-zinc-500 flex items-center gap-2 mt-0.5">
-                    <span className="font-semibold text-zinc-400">{repo.language}</span>
-                    <span>•</span>
-                    <span>{getRelativeTime(repo.updatedAt)}</span>
+                  
+                  {/* Stars Indicator */}
+                  <div className="flex items-center gap-0.5 text-[10px] text-zinc-400 font-mono font-bold shrink-0">
+                    <Star className="h-3 w-3 text-amber-500" />
+                    <span>{repo.stars}</span>
                   </div>
-                </div>
-                
-                {/* Stars Indicator */}
-                <div className="flex items-center gap-0.5 text-[10px] text-zinc-400 font-mono font-bold shrink-0">
-                  <Star className="h-3 w-3 text-amber-500" />
-                  <span>{repo.stars}</span>
-                </div>
-              </a>
-            ))}
+                </a>
+              ))}
+            </div>
           </div>
 
           {/* RIGHT: Recent Activities Log */}
           <div className="space-y-2 border-t sm:border-t-0 sm:border-l border-saas-border/40 pt-4 sm:pt-0 sm:pl-5">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
               Recent Push Events
             </h4>
             
-            <div className="space-y-2.5 max-h-[110px] overflow-y-auto pr-1 no-scrollbar">
+            <div className="space-y-2.5 max-h-[110px] overflow-y-auto pr-1 no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {commits.length === 0 ? (
                 <div className="text-zinc-500 text-[10px] italic">No recent push events logged.</div>
               ) : (
-                commits.slice(0, 2).map((commit, idx) => (
+                commits.slice(0, 10).map((commit, idx) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex items-center justify-between gap-2 text-[10px]">
                       <span className="font-bold text-zinc-400 truncate max-w-[90px]">{commit.repo}</span>

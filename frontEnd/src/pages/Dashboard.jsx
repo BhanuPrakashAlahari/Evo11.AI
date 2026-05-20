@@ -1,12 +1,7 @@
 import { useState } from 'react'
-import { 
-  Plus, 
-  Calendar,
-  Sparkles
-} from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import {
   WeatherWidget,
-  GitHubWidget,
   CryptoWidget,
   MetricsWidget
 } from '../widgets/placeholder'
@@ -34,35 +29,28 @@ export default function Dashboard() {
             Real-time operations, analytical insights, and service monitoring dashboard.
           </p>
         </div>
-        
+
         {/* Universal Actions Bar */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Skeleton Load simulator toggle */}
-          <button 
+          <button
             onClick={triggerSimulateLoad}
             className="btn-saas-secondary text-linear-purple border-linear-purple/30 bg-linear-purple/5 hover:bg-linear-purple/10 flex items-center gap-1.5 cursor-pointer"
           >
             <Sparkles className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Simulate Loading</span>
-          </button>
-
-          <button className="btn-saas-secondary">
-            <Calendar className="h-3.5 w-3.5" />
-            <span>Last 24 Hours</span>
-          </button>
-          
-          <button className="btn-saas-primary">
-            <Plus className="h-3.5 w-3.5" />
-            <span>Deploy Service</span>
+            <span>Refresh</span>
           </button>
         </div>
       </div>
 
       {/* 2. Responsive CSS Grid Layout for Widgets */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <GitHubWidget isLoading={isLoading} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <WeatherWidget isLoading={isLoading} />
         <CryptoWidget isLoading={isLoading} />
+      </div>
+
+      {/* 3. Full-Width System Performance & Historical Telemetry */}
+      <div className="w-full pt-2">
         <MetricsWidget isLoading={isLoading} />
       </div>
     </div>

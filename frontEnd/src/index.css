@@ -26,6 +26,40 @@
   /* Custom timing for elite micro-animations */
   --transition-saas: cubic-bezier(0.16, 1, 0.3, 1);
   --transition-duration-saas: 350ms;
+
+  --color-chart-label: var(--chart-label);
+  --color-chart-ring-background: var(--chart-ring-background);
+  --color-chart-marker-foreground: var(--chart-marker-foreground);
+  --color-chart-marker-border: var(--chart-marker-border);
+  --color-chart-marker-background: var(--chart-marker-background);
+  --color-chart-tooltip-muted: var(--chart-tooltip-muted);
+  --color-chart-tooltip-foreground: var(--chart-tooltip-foreground);
+  --color-chart-tooltip-background: var(--chart-tooltip-background);
+  --color-chart-grid: var(--chart-grid);
+  --color-crosshair: var(--chart-crosshair);
+  --color-chart-line-secondary: var(--chart-line-secondary);
+  --color-chart-line-primary: var(--chart-line-primary);
+  --color-chart-foreground-muted: var(--chart-foreground-muted);
+  --color-chart-foreground: var(--chart-foreground);
+  --color-chart-background: var(--chart-background);
+}
+
+:root {
+  --chart-background: #000000;
+  --chart-foreground: #ffffff;
+  --chart-foreground-muted: #71717a;
+  --chart-line-primary: #5e6ad2;
+  --chart-line-secondary: #3f3f46;
+  --chart-crosshair: rgba(94, 106, 210, 0.4);
+  --chart-grid: #1f1f22;
+  --chart-tooltip-background: rgba(9, 9, 11, 0.95);
+  --chart-tooltip-foreground: #ffffff;
+  --chart-tooltip-muted: #a1a1aa;
+  --chart-marker-background: #121214;
+  --chart-marker-border: #1f1f22;
+  --chart-marker-foreground: #ffffff;
+  --chart-ring-background: rgba(94, 106, 210, 0.25);
+  --chart-label: #71717a;
 }
 
 /* -------------------------------------------------------------------------- */

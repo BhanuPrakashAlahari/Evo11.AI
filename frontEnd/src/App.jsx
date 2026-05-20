@@ -3,6 +3,7 @@ import DashboardLayout from './layouts/DashboardLayout'
 import Dashboard from './pages/Dashboard'
 import Tasks from './pages/Tasks'
 import TechNews from './pages/TechNews'
+import GitHubConsole from './pages/GitHubConsole'
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="/"         element={<Dashboard />} />
         <Route path="/tasks"    element={<Tasks />} />
         <Route path="/technews" element={<TechNews />} />
+        <Route path="/gitHub"   element={<GitHubConsole />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*"         element={<Navigate to="/" replace />} />
       </Routes>

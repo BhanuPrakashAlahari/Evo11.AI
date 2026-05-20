@@ -16,7 +16,7 @@ class GithubService {
       }
 
       // 1. Fetch user repositories (sorted by latest updates)
-      const reposUrl = `https://api.github.com/users/${encodeURIComponent(user)}/repos?sort=updated&per_page=5`
+      const reposUrl = `https://api.github.com/users/${encodeURIComponent(user)}/repos?sort=updated&per_page=100`
       const reposRes = await fetch(reposUrl, { headers })
 
       if (reposRes.status === 403 || reposRes.status === 404) {
@@ -36,12 +36,12 @@ class GithubService {
       }))
 
       // 2. Fetch commits directly from the top active repositories to guarantee live updates
-      const topRepos = repos.slice(0, 3)
+      const topRepos = repos.slice(0, 5)
       let commits = []
 
       const commitPromises = topRepos.map(async (repo) => {
         try {
-          const commitsUrl = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo.name)}/commits?per_page=5`
+          const commitsUrl = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo.name)}/commits?per_page=10`
           const commitsRes = await fetch(commitsUrl, { headers })
           if (commitsRes.ok) {
             const rawCommits = await commitsRes.json()
@@ -61,11 +61,11 @@ class GithubService {
       })
 
       const commitsNested = await Promise.all(commitPromises)
-      // Flatten, sort descending by time, and slice to top 5
+      // Flatten, sort descending by time, and slice to top 10
       commits = commitsNested
         .flat()
         .sort((a, b) => new Date(b.time) - new Date(a.time))
-        .slice(0, 5)
+        .slice(0, 10)
 
       // If no recent commit details were found in public logs, add a standard initial commit
       if (commits.length === 0) {
