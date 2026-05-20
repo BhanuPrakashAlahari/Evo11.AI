@@ -16,6 +16,7 @@ export const config = {
   isProduction: process.env.NODE_ENV === 'production',
   openWeatherApiKey: process.env.OPENWEATHER_API_KEY || '',
   githubUsername: process.env.GITHUB_USERNAME || 'BhanuPrakashAlahari',
+  githubToken: process.env.GITHUB_TOKEN || '',
   newsApiKey: process.env.NEWS_API_KEY || '',
   mongoUri: process.env.MONGODB_URI || ''
 }

@@ -9,11 +9,14 @@ class GithubService {
     const user = username || 'BhanuPrakashAlahari'
     
     try {
+      const headers = { 'User-Agent': 'Evo11-Console-Server' }
+      if (config.githubToken) {
+        headers['Authorization'] = `token ${config.githubToken}`
+      }
+
       // 1. Fetch user repositories (sorted by latest updates)
       const reposUrl = `https://api.github.com/users/${encodeURIComponent(user)}/repos?sort=updated&per_page=5`
-      const reposRes = await fetch(reposUrl, {
-        headers: { 'User-Agent': 'Evo11-Console-Server' }
-      })
+      const reposRes = await fetch(reposUrl, { headers })
 
       if (reposRes.status === 403 || reposRes.status === 404) {
         throw new Error(`GitHub responded with status: ${reposRes.status} (Rate limited or not found)`)
@@ -33,9 +36,7 @@ class GithubService {
 
       // 2. Fetch user activity events to extract commit details
       const eventsUrl = `https://api.github.com/users/${encodeURIComponent(user)}/events/public?per_page=10`
-      const eventsRes = await fetch(eventsUrl, {
-        headers: { 'User-Agent': 'Evo11-Console-Server' }
-      })
+      const eventsRes = await fetch(eventsUrl, { headers })
 
       let commits = []
       if (eventsRes.ok) {
