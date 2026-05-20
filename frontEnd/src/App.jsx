@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import DashboardLayout from './layouts/DashboardLayout'
 import Dashboard from './pages/Dashboard'
 import Tasks from './pages/Tasks'
+import TechNews from './pages/TechNews'
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
       <Routes>
         <Route path="/"         element={<Dashboard />} />
         <Route path="/tasks"    element={<Tasks />} />
+        <Route path="/technews" element={<TechNews />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*"         element={<Navigate to="/" replace />} />
       </Routes>

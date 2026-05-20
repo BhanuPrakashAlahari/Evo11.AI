@@ -6,13 +6,15 @@ import {
   ChevronLeft, 
   ChevronRight,
   Layers,
-  CheckSquare
+  CheckSquare,
+  Newspaper
 } from 'lucide-react'
 import { cn } from '../utils/cn'
 
 const navigationItems = [
   { name: 'Overview', icon: LayoutDashboard, to: '/' },
   { name: 'Tasks',    icon: CheckSquare,     to: '/tasks' },
+  { name: 'Tech News',icon: Newspaper,       to: '/technews' },
   { name: 'Settings', icon: Settings,        to: '/settings' },
 ]
 
