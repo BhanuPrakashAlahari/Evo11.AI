@@ -6,6 +6,7 @@ import { services } from '../services/api'
 // Custom styling helper to map crypto currencies to their theme colors
 const getCryptoConfig = (symbol) => {
   switch (symbol.toUpperCase()) {
+
     case 'BTC':
       return {
         icon: '₿',
@@ -120,7 +121,7 @@ export default function CryptoWidget({ isLoading: isParentLoading }) {
             Failed to load crypto statistics. Rate limits on public simple indexes may be exceeded.
           </p>
         </div>
-        <button 
+        <button
           onClick={() => fetchCryptoRates()}
           className="w-full btn-saas-secondary py-2 flex items-center justify-center gap-2 hover:bg-zinc-900 border-red-500/10 cursor-pointer text-xs"
         >
@@ -154,8 +155,8 @@ export default function CryptoWidget({ isLoading: isParentLoading }) {
             const isPositive = coin.change24h >= 0
 
             return (
-              <div 
-                key={coin.id} 
+              <div
+                key={coin.id}
                 className="flex items-center justify-between py-1.5 border-b border-saas-border/10 last:border-0 pb-2"
               >
                 {/* Symbol logo info */}
@@ -190,9 +191,8 @@ export default function CryptoWidget({ isLoading: isParentLoading }) {
                   <div className="text-[11px] font-bold text-white font-mono">
                     ${coin.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-                  <div className={`text-[9px] font-bold flex items-center gap-0.5 justify-end font-mono ${
-                    isPositive ? 'text-emerald-500' : 'text-rose-500'
-                  }`}>
+                  <div className={`text-[9px] font-bold flex items-center gap-0.5 justify-end font-mono ${isPositive ? 'text-emerald-500' : 'text-rose-500'
+                    }`}>
                     {isPositive ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
                     <span>{isPositive ? '+' : ''}{coin.change24h}%</span>
                   </div>
