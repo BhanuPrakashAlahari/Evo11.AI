@@ -6,7 +6,8 @@ import { newsService } from '../services/newsService.js'
  */
 export async function getNews(req, res, next) {
   try {
-    const data = await newsService.getLatestNews()
+    const bypassCache = req.query.refresh === 'true'
+    const data = await newsService.getLatestNews(bypassCache)
 
     // Allow short-term browser caching only for cached responses (reduces latency)
     if (data.cached) {

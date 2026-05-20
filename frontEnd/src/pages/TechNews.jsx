@@ -32,15 +32,13 @@ export default function TechNews() {
   const [isLoading, setIsLoading] = useState(true)
   const [isFetching, setIsFetching] = useState(false)
   const [hasError, setHasError] = useState(false)
-  const [isMock, setIsMock] = useState(false)
 
   const fetchNews = async (showIndicator = false) => {
     if (showIndicator) setIsFetching(true)
     try {
-      const res = await services.getNews()
+      const res = await services.getNews(showIndicator)
       if (res.success) {
         setArticles(res.articles || [])
-        setIsMock(res.isMock)
         setHasError(false)
       } else {
         setHasError(true)
@@ -90,12 +88,8 @@ export default function TechNews() {
         </div>
 
         <div className="flex items-center gap-3">
-          {isMock && (
-            <span className="text-[10px] font-bold font-mono text-amber-500 bg-amber-500/10 border border-amber-500/25 px-2.5 py-1 rounded-full">
-              Demo Feed Active
-            </span>
-          )}
-          <button 
+
+          <button
             onClick={() => fetchNews(true)}
             disabled={isFetching || isLoading}
             className="btn-saas-secondary flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
@@ -129,7 +123,7 @@ export default function TechNews() {
           <p className="text-xs text-zinc-500 mt-1 max-w-md">
             Failed to download recent article telemetry. Please check your NewsAPI connection or internet parameters.
           </p>
-          <button 
+          <button
             onClick={() => fetchNews(true)}
             className="btn-saas-primary mt-4 flex items-center gap-1.5"
           >
@@ -158,7 +152,7 @@ export default function TechNews() {
             >
               {/* Background accent glow */}
               <div className="absolute -top-10 -right-10 h-20 w-20 rounded-full bg-sky-500/5 group-hover/article:bg-sky-500/10 blur-xl transition-all duration-500" />
-              
+
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between text-[10px] text-zinc-500">
                   <span className={`font-bold px-2 py-0.5 rounded border shrink-0 ${getSourceColor(article.source)}`}>
@@ -169,7 +163,7 @@ export default function TechNews() {
                     {formatRelativeTime(article.publishedAt)}
                   </span>
                 </div>
-                
+
                 <h3 className="text-sm font-bold text-zinc-200 group-hover/article:text-white leading-snug line-clamp-3 transition-colors">
                   {article.title}
                 </h3>

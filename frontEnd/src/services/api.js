@@ -75,7 +75,7 @@ export const services = {
    * Queries the Tech News API endpoint for latest AI/software articles.
    * Target endpoint: GET /api/news
    */
-  getNews: () => apiClient.get('/news'),
+  getNews: (refresh = false) => apiClient.get('/news', { params: { refresh } }),
 
   // --- Task Management ---
   getTasks: () => apiClient.get('/tasks'),

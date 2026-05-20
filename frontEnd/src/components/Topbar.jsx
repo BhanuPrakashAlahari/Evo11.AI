@@ -1,6 +1,6 @@
 import { Menu } from 'lucide-react'
 
-export default function Topbar({ 
+export default function Topbar({
   openMobile
 }) {
   return (
@@ -15,18 +15,6 @@ export default function Topbar({
         >
           <Menu className="h-5 w-5" />
         </button>
-      </div>
-
-      {/* Right side items */}
-      <div className="flex items-center gap-4">
-        {/* Quick System Badge */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-          </span>
-          Telemetry Online
-        </div>
       </div>
     </header>
   )
