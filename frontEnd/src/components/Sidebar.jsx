@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { 
   LayoutDashboard, 
-  Settings, 
   X, 
   ChevronLeft, 
   ChevronRight,
@@ -17,7 +16,6 @@ const navigationItems = [
   { name: 'Tasks',    icon: CheckSquare,     to: '/tasks' },
   { name: 'Tech News',icon: Newspaper,       to: '/technews' },
   { name: 'GitHub',   icon: GitBranch,       to: '/gitHub' },
-  { name: 'Settings', icon: Settings,        to: '/settings' },
 ]
 
 export default function Sidebar({ 
@@ -100,7 +98,7 @@ export default function Sidebar({
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-saas-border bg-saas-card/50">
+        <div className="p-4 border-t border-saas-border bg-saas-card/50 flex flex-col items-center">
           <button
             onClick={toggleCollapsed}
             className="hidden lg:flex w-full items-center justify-center rounded-lg py-2 text-zinc-500 hover:bg-saas-surface-raised hover:text-zinc-200 transition-all duration-200 cursor-pointer"
@@ -108,25 +106,9 @@ export default function Sidebar({
             {isCollapsed ? (
               <ChevronRight className="h-5 w-5" />
             ) : (
-              <div className="flex items-center gap-2">
-                <ChevronLeft className="h-5 w-5" />
-                <span className="text-xs font-semibold uppercase tracking-wider">Collapse</span>
-              </div>
+              <ChevronLeft className="h-5 w-5" />
             )}
           </button>
-
-          <div className="flex items-center gap-3 pt-2 mt-2 lg:mt-0">
-            <div className="relative h-9 w-9 shrink-0 rounded-full bg-zinc-950 overflow-hidden border border-saas-border flex items-center justify-center">
-              <span className="font-semibold text-zinc-400 text-sm">BP</span>
-              <div className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-500 border border-zinc-950 animate-pulse" />
-            </div>
-            {(!isCollapsed || isMobileOpen) && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">Bhanu Prakash</p>
-                <p className="text-xs text-zinc-500 truncate">bhanu@evo11.ai</p>
-              </div>
-            )}
-          </div>
         </div>
       </aside>
     </>

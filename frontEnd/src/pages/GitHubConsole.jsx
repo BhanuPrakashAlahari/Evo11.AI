@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { 
-  GitBranch, 
   GitCommit, 
   Star, 
   ExternalLink, 
@@ -191,8 +190,7 @@ export default function GitHubConsole() {
       {/* 1. Header with dynamic badges */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gradient-saas flex items-center gap-2.5">
-            <GitBranch className="h-7 w-7 text-emerald-500" />
+          <h1 className="text-3xl font-extrabold tracking-tight text-gradient-saas">
             GitHub Workspace
           </h1>
           <p className="text-sm text-zinc-400 mt-1">
