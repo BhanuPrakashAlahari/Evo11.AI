@@ -10,13 +10,13 @@ const __dirname = path.dirname(__filename)
 dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 
 export const config = {
-  port: parseInt(process.env.PORT || '5000', 10),
+  port: parseInt(process.env.PORT || '5001', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
-  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+  clientUrl: process.env.CLIENT_URL,
   isProduction: process.env.NODE_ENV === 'production',
-  openWeatherApiKey: process.env.OPENWEATHER_API_KEY || '',
+  openWeatherApiKey: process.env.OPENWEATHER_API_KEY,
   githubUsername: process.env.GITHUB_USERNAME || 'BhanuPrakashAlahari',
-  githubToken: process.env.GITHUB_TOKEN || '',
-  newsApiKey: process.env.NEWS_API_KEY || '',
-  mongoUri: process.env.MONGODB_URI || ''
+  githubToken: process.env.GITHUB_TOKEN,
+  newsApiKey: process.env.NEWS_API_KEY,
+  mongoUri: process.env.MONGODB_URI
 }
