@@ -4,7 +4,6 @@ import {
   X, 
   ChevronLeft, 
   ChevronRight,
-  Layers,
   CheckSquare,
   Newspaper,
   GitBranch
@@ -44,9 +43,6 @@ export default function Sidebar({
         {/* Brand */}
         <div className="flex h-16 items-center justify-between px-6 border-b border-saas-border">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-linear-purple text-white shadow-md shadow-linear-purple/30">
-              <Layers className="h-5 w-5" />
-            </div>
             {(!isCollapsed || isMobileOpen) && (
               <span className="font-extrabold text-sm tracking-wider uppercase text-white whitespace-nowrap">
                 EVO<span className="text-linear-purple">11</span>
