@@ -1,5 +1,17 @@
 import mongoose from 'mongoose'
 import { config } from './env.js'
+import dns from 'dns'
+
+// Only override DNS servers in non-production environments (e.g., local development).
+// This prevents querySrv ECONNREFUSED/ENOTFOUND failures caused by restricted or unstable ISP/local DNS servers,
+// while preserving standard cloud-native DNS resolution inside production environments (AWS, GCP, Render, Vercel).
+if (!config.isProduction) {
+  try {
+    dns.setServers(['8.8.8.8', '8.8.4.4'])
+  } catch (dnsErr) {
+    console.warn('[Database] ⚠️ Failed to set public DNS servers in development, relying on system default:', dnsErr.message)
+  }
+}
 
 /**
  * Establishes a persistent Mongoose connection to MongoDB.

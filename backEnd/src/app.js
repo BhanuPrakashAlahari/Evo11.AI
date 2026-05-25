@@ -1,12 +1,26 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import mongoose from 'mongoose'
 import { config } from './config/env.js'
+import { connectDatabase } from './config/database.js'
 import { requestLogger } from './middleware/logger.js'
 import { errorHandler, AppError } from './middleware/errorHandler.js'
 import apiRoutes from './routes/index.js'
 
 const app = express()
+
+// Ensure database connection for serverless/Vercel environments
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectDatabase()
+    } catch (err) {
+      console.error('[Database Middleware] Connection error:', err.message)
+    }
+  }
+  next()
+})
 
 // Disable ETag caching to prevent HTTP 304 status codes in development/testing
 app.disable('etag')
@@ -26,7 +40,7 @@ const corsOrigin = (origin, callback) => {
 app.use(cors({
   origin: corsOrigin,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-github-username', 'x-github-token'],
   credentials: true
 }))
 

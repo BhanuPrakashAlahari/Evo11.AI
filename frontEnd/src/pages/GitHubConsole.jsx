@@ -10,7 +10,6 @@ import {
   BookOpen, 
   Code,
   TrendingUp,
-  User,
   ShieldCheck,
   CheckCircle2
 } from 'lucide-react'
@@ -46,7 +45,8 @@ export default function GitHubConsole() {
   const fetchGitTelemetry = async (showIndicator = false) => {
     if (showIndicator) setIsFetching(true)
     try {
-      const data = await services.getGithub()
+      const storedUser = 'BhanuPrakashAlahari'
+      const data = await services.getGithub(storedUser)
       if (data.success) {
         setGitData(data)
         setHasError(false)
@@ -200,11 +200,16 @@ export default function GitHubConsole() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-xs px-3 py-1 rounded-full bg-zinc-900 border border-saas-border text-zinc-300 font-medium flex items-center gap-1.5 shadow-sm">
-            <User className="h-3.5 w-3.5 text-zinc-500" />
-            <span className="font-mono text-zinc-100">{username}</span>
-          </span>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-saas-border text-zinc-300 shadow-sm">
+            <img 
+              src={`https://github.com/${username}.png`} 
+              alt={username} 
+              onError={(e) => { e.target.src = 'https://github.com/identicons/octocat.png' }}
+              className="h-5 w-5 rounded-full border border-saas-border/80" 
+            />
+            <span className="font-mono text-xs font-semibold text-zinc-100">{username}</span>
+          </div>
 
           <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full border flex items-center gap-1.5 ${
             isMock 

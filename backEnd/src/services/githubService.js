@@ -5,14 +5,14 @@ class GithubService {
    * Retrieves active repository profiles and recent commit telemetry from GitHub's REST API.
    * Leverages high-fidelity backup configurations if GitHub's rate limit bounds are reached.
    */
-  async getTelemetry(username = config.githubUsername) {
+  async getTelemetry(username = config.githubUsername, customToken = null) {
     const user = username || 'BhanuPrakashAlahari'
 
     try {
       const headers = { 'User-Agent': 'Evo11-Console-Server' }
-      if (config.githubToken) {
-        headers['Authorization'] = `token ${config.githubToken}`
-
+      const token = customToken || config.githubToken
+      if (token) {
+        headers['Authorization'] = `token ${token}`
       }
 
       // 1. Fetch user repositories (sorted by latest updates)

@@ -59,11 +59,12 @@ export const services = {
    */
   getWeather: (city) => apiClient.get('/weather', { params: { city } }),
 
-  /**
-   * Queries the GitHub telemetry API endpoint for repository summaries and commits.
-   * Target endpoint: GET /api/github
-   */
-  getGithub: () => apiClient.get('/github'),
+  getGithub: (username, token) => {
+    const headers = {}
+    if (username) headers['x-github-username'] = username
+    if (token) headers['x-github-token'] = token
+    return apiClient.get('/github', { headers })
+  },
 
   /**
    * Queries the Crypto price tracking telemetry API endpoint.
