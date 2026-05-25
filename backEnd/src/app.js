@@ -49,7 +49,15 @@ app.use(express.json()) // Parse JSON payloads
 app.use(express.urlencoded({ extended: true })) // Parse url-encoded payloads
 app.use(requestLogger) // Write HTTP server telemetry logs
 
-// 3. API ROUTING PREFIX MOUNT
+// 3. ROOT & API ROUTING PREFIX MOUNT
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Evo11.AI API Engine is active and operational.',
+    documentation: 'Use /api/health for system status diagnostics.'
+  })
+})
+
 app.use('/api', apiRoutes)
 
 // 4. UNRESOLVED ROUTE HANDLING (404 Fallback)
