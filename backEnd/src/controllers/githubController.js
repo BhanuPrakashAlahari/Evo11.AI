@@ -35,7 +35,8 @@ export async function redirectToGithubAuth(req, res, next) {
       return res.status(400).send('GitHub Client ID is not configured in backEnd/.env')
     }
 
-    const redirectUri = `${config.clientUrl || 'http://localhost:5173'}/gitHub`
+    const clientUrl = (config.clientUrl || 'http://localhost:5173').trim().replace(/\/+$/, '')
+    const redirectUri = `${clientUrl}/gitHub`
     const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=read:user,repo&prompt=select_account&redirect_uri=${encodeURIComponent(redirectUri)}`
     
     res.redirect(githubAuthUrl)

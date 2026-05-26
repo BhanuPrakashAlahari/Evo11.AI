@@ -12,7 +12,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 export const config = {
   port: parseInt(process.env.PORT || '5001', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
-  clientUrl: process.env.CLIENT_URL,
+  clientUrl: process.env.CLIENT_URL ? process.env.CLIENT_URL.trim().replace(/\/+$/, '') : 'http://localhost:5173',
   isProduction: process.env.NODE_ENV === 'production',
   openWeatherApiKey: process.env.OPENWEATHER_API_KEY,
   githubUsername: process.env.GITHUB_USERNAME || 'BhanuPrakashAlahari',
