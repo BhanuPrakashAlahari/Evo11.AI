@@ -1,4 +1,4 @@
-# Evo11 Console Dashboard 🚀
+# Evo11  Dashboard 🚀
 
 Evo11 Console is a premium, high-fidelity, enterprise-grade operations and diagnostics dashboard. Designed with modern web aesthetics (vibrant dark theme, subtle micro-animations, and glassmorphism layouts), it integrates real-time analytical insights, task management, live news feeds, and secure GitHub developer telemetry.
 
