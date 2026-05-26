@@ -27,11 +27,34 @@ export default function GitHubWidget({ isLoading: isParentLoading }) {
   const [isFetching, setIsFetching] = useState(false)
   const [hasError, setHasError] = useState(false)
 
+  const [token, setToken] = useState(() => localStorage.getItem('github_oauth_token'))
+  const [usernameState, setUsernameState] = useState(() => localStorage.getItem('github_oauth_username'))
+
+  useEffect(() => {
+    const currentToken = localStorage.getItem('github_oauth_token')
+    const currentUsername = localStorage.getItem('github_oauth_username')
+    if (currentToken !== token) {
+      setToken(currentToken)
+    }
+    if (currentUsername !== usernameState) {
+      setUsernameState(currentUsername)
+    }
+  }, [token, usernameState])
+
   // Asynchronous API query trigger
   const fetchGitTelemetry = async (showIndicator = false) => {
+    const activeToken = localStorage.getItem('github_oauth_token')
+    const activeUsername = localStorage.getItem('github_oauth_username')
+    if (!activeToken) {
+      setIsLocalLoading(false)
+      setIsFetching(false)
+      return
+    }
+
     if (showIndicator) setIsFetching(true)
     try {
-      const data = await services.getGithub()
+      const data = await services.getGithub(activeUsername, activeToken)
+      if (!localStorage.getItem('github_oauth_token')) return
       if (data.success) {
         setGitData(data)
         setHasError(false)
@@ -39,11 +62,14 @@ export default function GitHubWidget({ isLoading: isParentLoading }) {
         setHasError(true)
       }
     } catch (err) {
+      if (!localStorage.getItem('github_oauth_token')) return
       console.warn('GitHub Widget - Fetch telemetry failed:', err)
       setHasError(true)
     } finally {
-      setIsLocalLoading(false)
-      setIsFetching(false)
+      if (localStorage.getItem('github_oauth_token')) {
+        setIsLocalLoading(false)
+        setIsFetching(false)
+      }
     }
   }
 
@@ -52,6 +78,11 @@ export default function GitHubWidget({ isLoading: isParentLoading }) {
     let isActive = true
 
     const runInitialFetch = async () => {
+      const activeToken = localStorage.getItem('github_oauth_token')
+      if (!activeToken) {
+        setIsLocalLoading(false)
+        return
+      }
       if (isActive) {
         setIsLocalLoading(true)
         await fetchGitTelemetry()
@@ -61,6 +92,8 @@ export default function GitHubWidget({ isLoading: isParentLoading }) {
     runInitialFetch()
 
     const interval = setInterval(() => {
+      const activeToken = localStorage.getItem('github_oauth_token')
+      if (!activeToken) return
       if (isActive) fetchGitTelemetry(true)
     }, 60000)
 
@@ -69,6 +102,42 @@ export default function GitHubWidget({ isLoading: isParentLoading }) {
       clearInterval(interval)
     }
   }, [])
+
+  if (!token) {
+    return (
+      <div className="saas-card flex flex-col justify-between h-[230px] lg:col-span-2 relative overflow-hidden group/git">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-1/2 rounded-full bg-linear-purple/5 blur-[50px] pointer-events-none" />
+        
+        <div className="flex justify-between items-center pb-2.5 border-b border-saas-border/40 relative z-10">
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
+            <GitBranch className="h-3.5 w-3.5 text-zinc-400" />
+            GitHub Workspace
+          </span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-950 border border-saas-border text-zinc-500 font-mono">
+            Disconnected
+          </span>
+        </div>
+
+        <div className="flex flex-col items-center justify-center text-center space-y-3 py-4 relative z-10 flex-1">
+          <p className="text-xs text-zinc-400 max-w-sm">
+            Link your GitHub workspace in the console to stream live repository diagnostics and push event logs here.
+          </p>
+          <a
+            href="/gitHub"
+            className="btn-saas-primary py-2 px-6 text-[11px] font-bold flex items-center gap-2 cursor-pointer shadow"
+          >
+            <GitBranch className="h-3.5 w-3.5" />
+            <span>Go to Console</span>
+          </a>
+        </div>
+
+        <div className="pt-2 border-t border-saas-border/20 text-right flex items-center justify-between text-[9px] text-zinc-500 relative z-10">
+          <span>Connection offline</span>
+          <span className="text-zinc-500 font-medium">Inactive</span>
+        </div>
+      </div>
+    )
+  }
 
   const showSkeleton = isParentLoading || isLocalLoading
 
@@ -136,7 +205,7 @@ export default function GitHubWidget({ isLoading: isParentLoading }) {
           <div className="flex items-center gap-2">
             {isFetching && <RefreshCw className="h-3 w-3 text-zinc-500 animate-spin" />}
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-950 border border-saas-border text-zinc-400 font-mono">
-              {username} • {isMock ? 'Demo Mode' : 'Live'}
+              {username || usernameState} • {isMock ? 'Demo Mode' : 'Live'}
             </span>
           </div>
         </div>

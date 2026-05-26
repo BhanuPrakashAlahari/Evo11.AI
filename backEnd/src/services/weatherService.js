@@ -10,8 +10,7 @@ class WeatherService {
     const isPlaceholder = !apiKey || apiKey === 'placeholder_api_key' || apiKey === 'your_openweather_api_key'
 
     if (isPlaceholder) {
-      console.log(`[Weather Service] Key is placeholder. Generating high-fidelity mock weather for: ${city}`)
-      return this.generateMockWeather(city)
+      throw new Error('OpenWeather API Key is a placeholder. Please configure a valid API key in backEnd/.env')
     }
 
     try {
@@ -37,69 +36,11 @@ class WeatherService {
         isMock: false
       }
     } catch (error) {
-      console.error(`[Weather Service] Fetch failed for ${city}. Falling back to mocks. Error:`, error)
-      return this.generateMockWeather(city)
-    }
-  }
-
-  /**
-   * Generates highly realistic, responsive mock statistics based on the city requested.
-   */
-  generateMockWeather(city) {
-    const normalizedCity = city.toLowerCase().trim()
-    
-    // Custom parameters per standard cities for visual accuracy
-    if (normalizedCity.includes('london')) {
-      return {
-        success: true,
-        city: 'London',
-        temp: 54,
-        humidity: 82,
-        condition: 'Rain',
-        description: 'light intensity drizzle',
-        icon: '09d',
-        wind: 15,
-        isMock: true
-      }
-    } else if (normalizedCity.includes('new york')) {
-      return {
-        success: true,
-        city: 'New York',
-        temp: 68,
-        humidity: 50,
-        condition: 'Clear',
-        description: 'clear sky',
-        icon: '01d',
-        wind: 8,
-        isMock: true
-      }
-    } else if (normalizedCity.includes('tokyo')) {
-      return {
-        success: true,
-        city: 'Tokyo',
-        temp: 70,
-        humidity: 60,
-        condition: 'Clouds',
-        description: 'scattered clouds',
-        icon: '03d',
-        wind: 5,
-        isMock: true
-      }
-    }
-
-    // Default fallback mock parameters (resembles San Francisco metrics)
-    return {
-      success: true,
-      city: city.charAt(0).toUpperCase() + city.slice(1),
-      temp: 72,
-      humidity: 48,
-      condition: 'Clear',
-      description: 'sunny skies',
-      icon: '01d',
-      wind: 12,
-      isMock: true
+      console.error(`[Weather Service] Fetch failed for ${city}. Error:`, error)
+      throw error
     }
   }
 }
 
 export const weatherService = new WeatherService()
+

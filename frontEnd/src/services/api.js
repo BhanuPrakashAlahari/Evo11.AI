@@ -66,6 +66,8 @@ export const services = {
     return apiClient.get('/github', { headers })
   },
 
+  exchangeGithubCode: (code) => apiClient.post('/github/oauth', { code }),
+
   /**
    * Queries the Crypto price tracking telemetry API endpoint.
    * Target endpoint: GET /api/crypto

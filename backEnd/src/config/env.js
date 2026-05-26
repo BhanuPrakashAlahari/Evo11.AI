@@ -17,6 +17,8 @@ export const config = {
   openWeatherApiKey: process.env.OPENWEATHER_API_KEY,
   githubUsername: process.env.GITHUB_USERNAME || 'BhanuPrakashAlahari',
   githubToken: process.env.GITHUB_TOKEN,
+  githubClientId: process.env.GITHUB_CLIENT_ID,
+  githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
   newsApiKey: process.env.NEWS_API_KEY,
   mongoUri: process.env.MONGODB_URI
 }

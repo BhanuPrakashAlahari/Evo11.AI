@@ -140,6 +140,67 @@ class GithubService {
       isMock: true
     }
   }
+
+  /**
+   * Exchanges authorization code for GitHub access token and username.
+   */
+  async exchangeCodeForToken(code) {
+    const clientId = config.githubClientId ? config.githubClientId.trim() : ''
+    const clientSecret = config.githubClientSecret ? config.githubClientSecret.trim() : ''
+
+    if (!clientId || !clientSecret || clientId === 'your_github_client_id' || clientSecret === 'your_github_client_secret') {
+      throw new Error('GitHub Client ID or Secret is not configured in backEnd/.env')
+    }
+
+    try {
+      const response = await fetch('https://github.com/login/oauth/access_token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          client_id: clientId,
+          client_secret: clientSecret,
+          code: code
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`GitHub token exchange responded with status: ${response.status}`)
+      }
+
+      const tokenData = await response.json()
+      if (tokenData.error) {
+        throw new Error(`GitHub OAuth error: ${tokenData.error_description || tokenData.error}`)
+      }
+
+      const accessToken = tokenData.access_token
+
+      // Query authenticated user profile
+      const userResponse = await fetch('https://api.github.com/user', {
+        headers: {
+          'User-Agent': 'Evo11-Console-Server',
+          'Authorization': `token ${accessToken}`
+        }
+      })
+
+      if (!userResponse.ok) {
+        throw new Error(`GitHub user profile query responded with status: ${userResponse.status}`)
+      }
+
+      const userData = await userResponse.json()
+      
+      return {
+        success: true,
+        access_token: accessToken,
+        username: userData.login
+      }
+    } catch (error) {
+      console.error('[GitHub Service] OAuth exchange failed:', error.message)
+      throw error
+    }
+  }
 }
 
 export const githubService = new GithubService()

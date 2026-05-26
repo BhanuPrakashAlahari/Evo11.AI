@@ -35,10 +35,10 @@ export default function Dashboard() {
           {/* Skeleton Load simulator toggle */}
           <button
             onClick={triggerSimulateLoad}
-            className="btn-saas-secondary text-linear-purple border-linear-purple/30 bg-linear-purple/5 hover:bg-linear-purple/10 flex items-center gap-1.5 cursor-pointer"
+            className="btn-saas-secondary text-xs sm:text-sm py-2.5 px-5 text-linear-purple border-linear-purple/30 bg-linear-purple/5 hover:bg-linear-purple/10 flex items-center gap-2 cursor-pointer rounded-xl font-bold shadow-md"
           >
-            <Sparkles className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <Sparkles className={`h-4.5 w-4.5 ${isLoading ? 'animate-spin' : ''}`} />
+            <span>Refresh Overview</span>
           </button>
         </div>
       </div>

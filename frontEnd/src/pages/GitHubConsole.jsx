@@ -10,7 +10,9 @@ import {
   Code,
   TrendingUp,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  GitBranch,
+  X
 } from 'lucide-react'
 import { services } from '../services/api'
 
@@ -41,11 +43,51 @@ export default function GitHubConsole() {
   const [selectedLanguage, setSelectedLanguage] = useState('All')
   const [sortBy, setSortBy] = useState('stars') // 'stars' | 'updated' | 'name'
 
+  const [token, setToken] = useState(() => localStorage.getItem('github_oauth_token'))
+  const [username, setUsername] = useState(() => localStorage.getItem('github_oauth_username'))
+  const [isAuthenticating, setIsAuthenticating] = useState(false)
+  const [authError, setAuthError] = useState(null)
+
+  // Handle OAuth code exchange callback on mount
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get('code')
+    if (code) {
+      const exchangeCode = async () => {
+        setIsAuthenticating(true)
+        setIsLoading(true)
+        try {
+          const res = await services.exchangeGithubCode(code)
+          if (res.success && res.access_token) {
+            localStorage.setItem('github_oauth_token', res.access_token)
+            localStorage.setItem('github_oauth_username', res.username)
+            setToken(res.access_token)
+            setUsername(res.username)
+            setAuthError(null)
+            // Strip the code parameter from the browser address bar
+            window.history.replaceState({}, document.title, window.location.pathname)
+          } else {
+            setAuthError(res.error || 'Failed to exchange authentication token')
+          }
+        } catch (err) {
+          setAuthError(err.message || 'Server connection failed during OAuth exchange')
+        } finally {
+          setIsAuthenticating(false)
+          setIsLoading(false)
+        }
+      }
+      exchangeCode()
+    }
+  }, [])
+
   const fetchGitTelemetry = async (showIndicator = false) => {
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
     if (showIndicator) setIsFetching(true)
     try {
-      const storedUser = 'BhanuPrakashAlahari'
-      const data = await services.getGithub(storedUser)
+      const data = await services.getGithub(username, token)
+      if (!localStorage.getItem('github_oauth_token')) return
       if (data.success) {
         setGitData(data)
         setHasError(false)
@@ -53,18 +95,22 @@ export default function GitHubConsole() {
         setHasError(true)
       }
     } catch (err) {
+      if (!localStorage.getItem('github_oauth_token')) return
       console.warn('GitHub Console - Fetch telemetry failed:', err)
       setHasError(true)
     } finally {
-      setIsLoading(false)
-      setIsFetching(false)
+      if (localStorage.getItem('github_oauth_token')) {
+        setIsLoading(false)
+        setIsFetching(false)
+      }
     }
   }
 
+  // Periodic polling only if authenticated
   useEffect(() => {
-    const initTimer = setTimeout(() => {
-      fetchGitTelemetry()
-    }, 0)
+    if (!token) return
+
+    fetchGitTelemetry()
     
     // Auto-update every 60 seconds
     const interval = setInterval(() => {
@@ -72,12 +118,27 @@ export default function GitHubConsole() {
     }, 60000)
 
     return () => {
-      clearTimeout(initTimer)
       clearInterval(interval)
     }
-  }, [])
+  }, [token, username])
 
-  const { repos = [], commits = [], username = 'BhanuPrakashAlahari', isMock = false } = gitData || {}
+  const handleDisconnect = () => {
+    localStorage.removeItem('github_oauth_token')
+    localStorage.removeItem('github_oauth_username')
+    setToken(null)
+    setUsername(null)
+    setGitData(null)
+    setIsLoading(false)
+    setIsFetching(false)
+    setHasError(false)
+  }
+
+  const handleConnect = () => {
+    // Redirect browser to backend GET /login endpoint
+    window.location.href = `${import.meta.env.VITE_API_URL}/github/login`
+  }
+
+  const { repos = [], commits = [], isMock = false } = gitData || {}
 
   // Compute developer telemetry aggregates
   const stats = useMemo(() => {
@@ -149,6 +210,50 @@ export default function GitHubConsole() {
     })
     return ['All', ...Array.from(langs)]
   }, [repos])
+
+  if (!token) {
+    return (
+      <div className="space-y-6 animate-fade-in p-1 max-w-4xl mx-auto pb-8 pt-12">
+        <div className="saas-card p-12 text-center flex flex-col items-center justify-center space-y-6 overflow-hidden relative">
+          {/* Glassmorphic glowing background */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-1/2 rounded-full bg-linear-purple/5 blur-[100px] pointer-events-none" />
+          
+          <div className="h-16 w-16 flex items-center justify-center text-zinc-400 shrink-0 bg-transparent relative z-10">
+            <GitBranch className="h-12 w-12 text-linear-purple animate-pulse" />
+          </div>
+
+          <div className="space-y-2 relative z-10 max-w-md">
+            <h2 className="text-2xl font-extrabold text-white tracking-tight">Connect GitHub Workspace</h2>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Link your GitHub account to access live repository diagnostics, track push events, search your code, and monitor development activities directly from your console.
+            </p>
+          </div>
+
+          {authError && (
+            <div className="flex items-center gap-2 text-rose-400 text-xs bg-rose-500/10 border border-rose-500/20 rounded-lg px-4 py-2 relative z-10">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{authError}</span>
+            </div>
+          )}
+
+          {isAuthenticating ? (
+            <div className="flex items-center gap-2 text-zinc-300 text-xs font-semibold relative z-10 bg-zinc-950/60 border border-saas-border rounded-lg px-6 py-3">
+              <RefreshCw className="h-4 w-4 text-linear-purple animate-spin" />
+              <span>Authenticating with GitHub...</span>
+            </div>
+          ) : (
+            <button
+              onClick={handleConnect}
+              className="btn-saas-primary py-3 px-8 text-xs font-bold flex items-center gap-2.5 cursor-pointer relative z-10 shadow-lg"
+            >
+              <GitBranch className="h-4 w-4" />
+              <span>Connect GitHub Account</span>
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -226,6 +331,14 @@ export default function GitHubConsole() {
             <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin text-emerald-500' : 'text-zinc-400'}`} />
             <span>Sync</span>
           </button>
+
+          <button
+            onClick={handleDisconnect}
+            className="btn-saas-secondary text-rose-400 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 py-2 px-3 text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+          >
+            <X className="h-3.5 w-3.5" />
+            <span>Disconnect</span>
+          </button>
         </div>
       </div>
 
@@ -252,10 +365,9 @@ export default function GitHubConsole() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
             {/* Stat Item 1 */}
-            <div className="saas-card-interactive p-4 flex items-center gap-4 relative overflow-hidden group/stat">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-emerald-500/5 group-hover/stat:bg-emerald-500/10 transition-all duration-300 blur-md" />
-              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner">
-                <BookOpen className="h-5 w-5" />
+            <div className="saas-card p-5 flex items-center gap-4">
+              <div className="h-10 w-10 flex items-center justify-center text-emerald-400 shrink-0">
+                <BookOpen className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500">Public Repositories</p>
@@ -264,10 +376,9 @@ export default function GitHubConsole() {
             </div>
 
             {/* Stat Item 2 */}
-            <div className="saas-card-interactive p-4 flex items-center gap-4 relative overflow-hidden group/stat">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-amber-500/5 group-hover/stat:bg-amber-500/10 transition-all duration-300 blur-md" />
-              <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shadow-inner">
-                <Star className="h-5 w-5 fill-amber-400/20" />
+            <div className="saas-card p-5 flex items-center gap-4">
+              <div className="h-10 w-10 flex items-center justify-center text-amber-400 shrink-0">
+                <Star className="h-6 w-6 fill-amber-400/20" />
               </div>
               <div>
                 <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500">Aggregated Stars</p>
@@ -276,10 +387,9 @@ export default function GitHubConsole() {
             </div>
 
             {/* Stat Item 3 */}
-            <div className="saas-card-interactive p-4 flex items-center gap-4 relative overflow-hidden group/stat">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-indigo-500/5 group-hover/stat:bg-indigo-500/10 transition-all duration-300 blur-md" />
-              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-inner">
-                <Code className="h-5 w-5" />
+            <div className="saas-card p-5 flex items-center gap-4">
+              <div className="h-10 w-10 flex items-center justify-center text-indigo-400 shrink-0">
+                <Code className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500">Primary Core Language</p>
@@ -288,10 +398,9 @@ export default function GitHubConsole() {
             </div>
 
             {/* Stat Item 4 */}
-            <div className="saas-card-interactive p-4 flex items-center gap-4 relative overflow-hidden group/stat">
-              <div className="absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-pink-500/5 group-hover/stat:bg-pink-500/10 transition-all duration-300 blur-md" />
-              <div className="h-10 w-10 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 shadow-inner">
-                <TrendingUp className="h-5 w-5" />
+            <div className="saas-card p-5 flex items-center gap-4">
+              <div className="h-10 w-10 flex items-center justify-center text-pink-400 shrink-0">
+                <TrendingUp className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-500">Push Events Tracked</p>
@@ -421,60 +530,62 @@ export default function GitHubConsole() {
             </div>
 
             {/* RIGHT COLUMN: Recent Push Activities Timeline */}
-            <div className="saas-card flex flex-col h-fit">
-              <div className="pb-3 border-b border-saas-border/50 flex justify-between items-center">
+            <div className="saas-card flex flex-col h-fit overflow-hidden">
+              <div className="px-6 py-4 bg-zinc-950/40 border-b border-saas-border/60 flex justify-between items-center">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
                   <GitCommit className="h-4 w-4 text-emerald-500" />
                   Push Activities Log
                 </h3>
-                <span className="text-[9px] px-2 py-0.5 rounded bg-zinc-950 border border-saas-border text-zinc-500 font-semibold font-mono">
+                <span className="text-[9px] px-2 py-0.5 rounded bg-zinc-900 border border-saas-border text-zinc-500 font-semibold font-mono">
                   UP TO 10
                 </span>
               </div>
 
-              <div className="mt-4 space-y-4 max-h-[500px] overflow-y-auto pr-1">
-                {commits.length === 0 ? (
-                  <div className="text-center py-12 space-y-2">
-                    <GitCommit className="h-8 w-8 text-zinc-700 mx-auto animate-pulse" />
-                    <p className="text-xs text-zinc-500 italic">No recent push events discovered</p>
-                  </div>
-                ) : (
-                  commits.slice(0, 10).map((commit, idx) => (
-                    <div key={idx} className="relative pl-6 pb-2 last:pb-0 group/timeline">
-                      {/* Vertical line connector */}
-                      {idx !== commits.slice(0, 10).length - 1 && (
-                        <div className="absolute left-[9px] top-4 bottom-0 w-[1px] bg-zinc-800 group-hover/timeline:bg-emerald-800 transition-colors" />
-                      )}
-                      
-                      {/* Timeline dot */}
-                      <div className="absolute left-1.5 top-2.5 h-2 w-2 rounded-full bg-zinc-700 border border-zinc-950 ring-2 ring-zinc-900 group-hover/timeline:bg-emerald-500 transition-colors" />
-
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="text-xs font-bold text-zinc-300 truncate max-w-[140px] group-hover/timeline:text-emerald-400 transition-colors">
-                            {commit.repo}
-                          </span>
-                          <span className="text-[9px] text-zinc-500 font-medium whitespace-nowrap">
-                            {getRelativeTime(commit.time)}
-                          </span>
-                        </div>
-                        
-                        <p className="text-xs text-zinc-400 font-medium leading-relaxed bg-zinc-950/40 p-2.5 rounded-lg border border-saas-border/30 hover:border-saas-border/80 transition-colors">
-                          {commit.message}
-                        </p>
-                      </div>
+              <div className="p-6 bg-saas-card flex-1 flex flex-col">
+                <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                  {commits.length === 0 ? (
+                    <div className="text-center py-12 space-y-2">
+                      <GitCommit className="h-8 w-8 text-zinc-700 mx-auto animate-pulse" />
+                      <p className="text-xs text-zinc-500 italic">No recent push events discovered</p>
                     </div>
-                  ))
-                )}
-              </div>
+                  ) : (
+                    commits.slice(0, 10).map((commit, idx) => (
+                      <div key={idx} className="relative pl-6 pb-4 last:pb-0 group/timeline">
+                        {/* Vertical line connector */}
+                        {idx !== commits.slice(0, 10).length - 1 && (
+                          <div className="absolute left-[9px] top-4 bottom-0 w-[1px] bg-zinc-800" />
+                        )}
+                        
+                        {/* Timeline dot */}
+                        <div className="absolute left-1.5 top-2.5 h-2.5 w-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/40" />
 
-              {/* Safe Sync Label */}
-              <div className="pt-4 border-t border-saas-border/20 mt-4 flex items-center justify-between text-[9px] text-zinc-500">
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                  GitHub Integration Secure
-                </span>
-                <span>Port active 60s check</span>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-xs font-bold text-zinc-200">
+                              {commit.repo}
+                            </span>
+                            <span className="text-[10px] text-zinc-500 font-medium font-mono">
+                              {getRelativeTime(commit.time)}
+                            </span>
+                          </div>
+                          
+                          <p className="text-xs text-zinc-400 font-medium leading-relaxed bg-zinc-950/30 p-3 rounded-lg border border-saas-border/60">
+                            {commit.message}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Safe Sync Label */}
+                <div className="pt-4 border-t border-saas-border/20 mt-6 flex items-center justify-between text-[9px] text-zinc-500 font-semibold">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                    GitHub Integration Secure
+                  </span>
+                  <span>Port active 60s check</span>
+                </div>
               </div>
             </div>
 

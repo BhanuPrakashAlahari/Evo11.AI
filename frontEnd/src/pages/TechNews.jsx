@@ -92,9 +92,9 @@ export default function TechNews() {
           <button
             onClick={() => fetchNews(true)}
             disabled={isFetching || isLoading}
-            className="btn-saas-secondary flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="btn-saas-secondary py-2.5 px-5 text-sm font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4.5 w-4.5 ${isFetching ? 'animate-spin' : ''}`} />
             <span>{isFetching ? 'Refreshing...' : 'Refresh Feed'}</span>
           </button>
         </div>
@@ -104,7 +104,7 @@ export default function TechNews() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="saas-card h-[180px] animate-pulse flex flex-col justify-between">
+            <div key={i} className="saas-card p-5 h-[180px] animate-pulse flex flex-col justify-between">
               <div className="space-y-2">
                 <div className="h-4 bg-zinc-800 rounded w-full" />
                 <div className="h-4 bg-zinc-800 rounded w-5/6" />
@@ -117,7 +117,7 @@ export default function TechNews() {
           ))}
         </div>
       ) : hasError ? (
-        <div className="saas-card border-red-500/20 bg-red-950/5 py-12 flex flex-col items-center justify-center text-center">
+        <div className="saas-card border-red-500/20 bg-red-950/5 p-6 py-12 flex flex-col items-center justify-center text-center">
           <AlertCircle className="h-10 w-10 text-rose-500 mb-3" />
           <h3 className="font-bold text-white text-base">News Feed Offline</h3>
           <p className="text-xs text-zinc-500 mt-1 max-w-md">
@@ -132,7 +132,7 @@ export default function TechNews() {
           </button>
         </div>
       ) : articles.length === 0 ? (
-        <div className="saas-card py-12 flex flex-col items-center justify-center text-center">
+        <div className="saas-card p-6 py-12 flex flex-col items-center justify-center text-center">
           <Newspaper className="h-10 w-10 text-zinc-600 mb-3" />
           <h3 className="font-bold text-zinc-300 text-base">Feed Currently Empty</h3>
           <p className="text-xs text-zinc-500 mt-1">
@@ -148,11 +148,8 @@ export default function TechNews() {
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="saas-card-interactive flex flex-col justify-between h-[180px] group/article relative overflow-hidden"
+              className="saas-card-interactive p-5 flex flex-col justify-between h-[180px] border border-saas-border bg-saas-card transition-colors duration-200"
             >
-              {/* Background accent glow */}
-              <div className="absolute -top-10 -right-10 h-20 w-20 rounded-full bg-sky-500/5 group-hover/article:bg-sky-500/10 blur-xl transition-all duration-500" />
-
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between text-[10px] text-zinc-500">
                   <span className={`font-bold px-2 py-0.5 rounded border shrink-0 ${getSourceColor(article.source)}`}>
@@ -164,14 +161,14 @@ export default function TechNews() {
                   </span>
                 </div>
 
-                <h3 className="text-sm font-bold text-zinc-200 group-hover/article:text-white leading-snug line-clamp-3 transition-colors">
+                <h3 className="text-sm font-bold text-zinc-200 leading-snug line-clamp-3">
                   {article.title}
                 </h3>
               </div>
 
               <div className="pt-2.5 border-t border-saas-border/30 flex items-center justify-between text-[10px] text-zinc-500 font-semibold">
                 <span className="text-zinc-600 truncate max-w-[150px]">By {article.author || 'Staff'}</span>
-                <span className="text-sky-400 flex items-center gap-1 group-hover/article:translate-x-0.5 transition-transform duration-200">
+                <span className="text-sky-400 flex items-center gap-1">
                   Read Article
                   <ExternalLink className="h-3 w-3" />
                 </span>

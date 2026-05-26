@@ -14,6 +14,12 @@ const PRIORITY_CONFIG = {
 
 const PRIORITY_RANK = { high: 3, medium: 2, low: 1 }
 
+const PRIORITY_CARD_STYLES = {
+  high:   'bg-rose-500/5 border-rose-500/20 hover:border-rose-500/35',
+  medium: 'bg-amber-500/5 border-amber-500/20 hover:border-amber-500/35',
+  low:    'bg-sky-500/5 border-sky-500/20 hover:border-sky-500/35'
+}
+
 export default function Tasks() {
   const [tasks, setTasks] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -176,9 +182,9 @@ export default function Tasks() {
         </div>
         <button
           onClick={() => { setIsFormOpen(true); setTimeout(() => inputRef.current?.focus(), 50) }}
-          className="btn-saas-primary flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+          className="btn-saas-primary py-2.5 px-5 text-sm font-semibold flex items-center gap-2 cursor-pointer self-start sm:self-auto"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4.5 w-4.5" />
           <span>New Task</span>
         </button>
       </div>
@@ -190,7 +196,7 @@ export default function Tasks() {
           { label: 'Pending', value: pendingCount,  color: 'text-amber-400' },
           { label: 'Done',  value: completedCount,  color: 'text-emerald-400' }
         ].map(stat => (
-          <div key={stat.label} className="saas-card text-center py-4">
+          <div key={stat.label} className="saas-card text-center p-5">
             <div className={`text-3xl font-extrabold ${stat.color}`}>{isLoading ? '—' : stat.value}</div>
             <div className="text-xs text-zinc-500 mt-1 font-medium uppercase tracking-wider">{stat.label}</div>
           </div>
@@ -199,21 +205,21 @@ export default function Tasks() {
 
       {/* ── Progress Bar ── */}
       {totalCount > 0 && (
-        <div className="saas-card py-3 px-4 flex items-center gap-4">
+        <div className="saas-card py-4 px-6 flex items-center gap-4">
           <span className="text-xs text-zinc-500 shrink-0 w-20">Progress</span>
-          <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-zinc-900 border border-saas-border rounded-full overflow-hidden p-[1px]">
             <div 
-              className="h-full bg-gradient-to-r from-linear-purple to-emerald-500 rounded-full transition-all duration-700"
+              className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-700"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <span className="text-xs font-bold text-zinc-400 shrink-0 w-10 text-right">{progress}%</span>
+          <span className="text-xs font-bold text-emerald-400 shrink-0 w-10 text-right">{progress}%</span>
         </div>
       )}
 
       {/* ── New Task Form ── */}
       {isFormOpen && (
-        <div className="saas-card border-linear-purple/20 bg-linear-purple/3 space-y-4">
+        <div className="saas-card p-6 border-linear-purple/20 bg-linear-purple/3 space-y-4">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <ClipboardList className="h-4 w-4 text-linear-purple" />
             Create New Task
@@ -271,16 +277,16 @@ export default function Tasks() {
           <div className="flex gap-2 justify-end pt-1">
             <button
               onClick={() => { setIsFormOpen(false); setFormError('') }}
-              className="btn-saas-secondary text-xs cursor-pointer"
+              className="btn-saas-secondary py-2.5 px-5 text-sm font-semibold cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleCreate}
               disabled={isSubmitting}
-              className="btn-saas-primary text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="btn-saas-primary py-2.5 px-5 text-sm font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              {isSubmitting ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+              {isSubmitting ? <RefreshCw className="h-4.5 w-4.5 animate-spin" /> : <Plus className="h-4.5 w-4.5" />}
               {isSubmitting ? 'Saving...' : 'Create Task'}
             </button>
           </div>
@@ -324,7 +330,7 @@ export default function Tasks() {
       <div className="space-y-2">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="saas-card flex items-center gap-4 animate-pulse">
+            <div key={i} className="saas-card p-5 flex items-center gap-4 animate-pulse">
               <div className="h-5 w-5 rounded-full bg-zinc-800 shrink-0" />
               <div className="flex-1 space-y-2">
                 <div className="h-3.5 bg-zinc-800 rounded w-3/4" />
@@ -334,7 +340,7 @@ export default function Tasks() {
             </div>
           ))
         ) : filtered.length === 0 ? (
-          <div className="saas-card flex flex-col items-center justify-center py-16 text-center">
+          <div className="saas-card p-6 flex flex-col items-center justify-center py-16 text-center">
             <CheckCircle2 className="h-10 w-10 text-zinc-700 mb-3" />
             <p className="text-sm font-semibold text-zinc-400">
               {search ? 'No tasks match your search.' : filter === 'completed' ? 'No completed tasks yet.' : 'No tasks yet!'}
@@ -346,11 +352,14 @@ export default function Tasks() {
         ) : (
           filtered.map(task => {
             const p = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.medium
+            const cardStyle = PRIORITY_CARD_STYLES[task.priority] || PRIORITY_CARD_STYLES.medium
             return (
               <div
                 key={task._id}
-                className={`group saas-card flex items-start gap-4 transition-all duration-200 hover:border-saas-border hover:bg-zinc-900/40 ${
-                  task.completed ? 'opacity-55' : ''
+                className={`group saas-card p-5 flex items-start gap-4 border transition-colors duration-200 ${
+                  task.completed 
+                    ? 'opacity-50 bg-zinc-950/20 border-zinc-800' 
+                    : cardStyle
                 }`}
               >
                 {/* Toggle */}
