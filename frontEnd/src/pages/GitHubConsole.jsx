@@ -134,8 +134,9 @@ export default function GitHubConsole() {
   }
 
   const handleConnect = () => {
-    // Redirect browser to backend GET /login endpoint
-    window.location.href = `${import.meta.env.VITE_API_URL}/github/login`
+    // Dynamically pass the window.location.origin so the backend can construct the perfect redirect_uri!
+    const originParam = encodeURIComponent(window.location.origin)
+    window.location.href = `${import.meta.env.VITE_API_URL}/github/login?redirect_origin=${originParam}`
   }
 
   const { repos = [], commits = [], isMock = false } = gitData || {}
